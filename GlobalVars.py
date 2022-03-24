@@ -40,10 +40,10 @@ def loadConfig(loadfilename):
     GlobalVars.exposure=float(parser.get('main','GlobalVars.exposure'))
 
     GlobalVars.ShutterRecording=bool(parser.getboolean('main','GlobalVars.ShutterRecording'))
-    GlobalVars.Pin1=int(parser.get('main','GlobalVars.Pin1'))    
+    GlobalVars.Pin1=str(parser.get('main','GlobalVars.Pin1'))    
     GlobalVars.COM_PORT_Idx=int(parser.get('main','GlobalVars.COM_PORT_Idx'))
     GlobalVars.SampleRate=int(parser.get('main','GlobalVars.SampleRate'))
-    
+    GlobalVars.DeviceName=str(parser.get('main','GlobalVars.DeviceName'))
 
       
 
@@ -69,7 +69,8 @@ def saveConfig(savefilename):
     parser.set('main','GlobalVars.ShutterRecording',str(GlobalVars.ShutterRecording));
     parser.set('main','GlobalVars.Pin1',str(GlobalVars.Pin1));
     parser.set('main','GlobalVars.COM_PORT_Idx',str(GlobalVars.COM_PORT_Idx));
-    parser.set('main','GlobalVars.SampleRate',str(GlobalVars.SampleRate));    
+    parser.set('main','GlobalVars.SampleRate',str(GlobalVars.SampleRate));
+    parser.set('main','GlobalVars.DeviceName',str(GlobalVars.DeviceName));        
     
 
       

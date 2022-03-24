@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <widget class="QComboBox" name="InputSelectioncomboBox">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
@@ -3481,7 +3481,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>70</x>
       <y>620</y>
       <width>91</width>
       <height>20</height>
@@ -3614,7 +3614,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Trigger Pin:</string>
+     <string>ShutterTrigger Pin:</string>
     </property>
     <property name="textFormat">
      <enum>Qt::AutoText</enum>
@@ -3640,7 +3640,7 @@
    </widget>
    <widget class="QComboBox" name="DAQOutComboBox">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>

@@ -10,7 +10,7 @@ Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 from AudioRecorderFunctions import *
 import GlobalVars
 
-5
+
 
 def RescanInputsButtonPushed():
     
@@ -18,22 +18,42 @@ def RescanInputsButtonPushed():
     import pyaudio as pa
     import sys, serial
     from serial.tools import list_ports
+
+    from nidaqmx.system.device import Device
+
+    system = nidaqmx.system.System.local()
+    NIDevices=system.devices.device_names
+
+    ui.InputSelectioncomboBox.disconnect();
+    ui.InputSelectioncomboBox.clear();
     
-    inputdevices = 0
-    
-    i=0;
-    TeensyPort = (list_ports.comports())    
-    ui.ArduinoSelectioncomboBox.clear();
-    for p in TeensyPort:                              
-               temp = p[0]
+    for p in NIDevices:                              
+              # temp = p[0]
                #print(temp)
-               ui.ArduinoSelectioncomboBox.insertItem(0,str(temp))          
+               ui.InputSelectioncomboBox.insertItem(0,str(p))
+               
+    ui.InputSelectioncomboBox.setCurrentText(GlobalVars.DeviceName);    
+    ui.InputSelectioncomboBox.currentIndexChanged.connect(InputSelectioncomboBoxChanged);    
+    
+    ui.DAQOutComboBox.disconnect()
+    ui.DAQOutComboBox.clear();
+    
+    device = Device(GlobalVars.DeviceName)
+    DAQPorts=device.do_lines.channel_names;    
+    
+    for p in DAQPorts:                              
+              # temp = p[0]
+               #print(temp)
+               ui.DAQOutComboBox.insertItem(0,str(p))
 
-
-    if (len(temp)>0):
-        GlobalVars.COM_PORT=(temp)
-    else:
-        print("No Teensy Serial Device")   
+    ui.DAQOutComboBox.setCurrentText(GlobalVars.Pin1);
+    ui.DAQOutComboBox.currentIndexChanged.connect(Ch1TriggerChanged);
+##
+##
+##    if (len(temp)>0):
+##        GlobalVars.COM_PORT=(temp)
+##    else:
+##        print("No Teensy Serial Device")   
   
 def StopPushButton():   
     import GlobalVars
@@ -142,7 +162,7 @@ def BirdNameLineEditChanged(newvalue):
     
 def Ch1TriggerChanged():
     import GlobalVars
-    GlobalVars.Pin1 = int(ui.Box1LevercomboBox.currentText());
+    GlobalVars.Pin1 = str(ui.DAQOutComboBox.currentText());
     
 def updateSampleRate():
     import GlobalVars
@@ -180,11 +200,7 @@ def updateSampleRate():
     import GlobalVars
     GlobalVars.samplerate=int(ui.SampleRatecomboBox.currentText())    
     
-def ChangeArduinoCom():
-    import GlobalVars
-    GlobalVars.COM_PORT=ui.ArduinoSelectioncomboBox.currentText();
-    GlobalVars.COM_PORT_Idx=ui.ArduinoSelectioncomboBox.currentIndex();
-    print(GlobalVars.COM_PORT)    
+ 
 
 class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -208,6 +224,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         GlobalVars.fps=((1000/GlobalVars.exposure))
         self.ExposureTimelineEdit.setText(str(GlobalVars.exposure))
         
+        GlobalVars.DeviceName='Dev1';
         GlobalVars.ShutterRecording=True;
         print(GlobalVars.height)
         print('x')
@@ -224,7 +241,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.StopPushButton.clicked.connect(StopPushButton)
         self.StartPushButton.clicked.connect(StartPushButton)        
         
-        self.Box1LevercomboBox.currentIndexChanged.connect(Ch1TriggerChanged);
+        self.DAQOutComboBox.currentIndexChanged.connect(Ch1TriggerChanged);
         self.SelectROIPushButton.clicked.connect(SelectROIPushButtonPressed)
         self.ClearROIPushButton.clicked.connect(ClearROIButtonPressed);
         self.InputSelectioncomboBox.currentIndexChanged.connect(InputSelectioncomboBoxChanged);
