@@ -19,10 +19,11 @@ pyaudio
 nidaqmx
 numpy
 pycromanager
+libTIFF
 
 Set up your camera in micromanager, and set remote commands on. 
-For the national instruments card, AI1 is the audio, AI2 is the frames from the camera (https://www.flirkorea.com/support-center/iis/machine-vision/application-note/configuring-synchronized-capture-with-multiple-cameras/)
-Input lines to to AI2., for a 6-pin Hirose connectors. 
+For the national instruments card, AI1 is the audio, AI2 is the frames from the camera (e.g. https://www.flirkorea.com/support-center/iis/machine-vision/application-note/configuring-synchronized-capture-with-multiple-cameras/)
+Input lines to to AI2., for a 6-pin Hirose connectors. This has only been tested w/ BlackFly cameras from FLIR, but since that's all on the micromanager end for the most part, it should work with other cameras.  
 
 Digital Output (/dev1/linep/port1) goes to a trigger, if you want to trigger the light on/off for extended recordings that don't need pre-song data. 
 

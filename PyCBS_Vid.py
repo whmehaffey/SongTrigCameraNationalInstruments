@@ -148,9 +148,9 @@ def Ch1SaveDirPushButtonpushButtonClicked():
     import GlobalVars
     import pdb
     
-    savefilename = (QtGui.QFileDialog.getSaveFileName(ui,'Save Name/Directory', GlobalVars.Ch1DirPath, ''))
-    GlobalVars.Ch1DirPath = QtCore.QFileInfo(savefilename[0]).path();
-    GlobalVars.Ch1fileName = QtCore.QFileInfo(savefilename[0]).fileName();
+    savefilename = (QtWidgets.QFileDialog.getSaveFileName(ui,'Save Name/Directory', GlobalVars.Ch1DirPath, ''))
+    GlobalVars.Ch1DirPath = QtWidgets.QFileInfo(savefilename[0]).path();
+    GlobalVars.Ch1fileName = QtWidgets.QFileInfo(savefilename[0]).fileName();
     
     ui.Ch1FileNameLabel.setText("Filename: "+GlobalVars.Ch1fileName)
     ui.Ch1FileDirectoryLabel.setText("Directory: "+GlobalVars.Ch1DirPath)
@@ -185,15 +185,15 @@ def loadConfig_ButtonPressed():
     import os
     import GlobalVars       
             
-    loadfilename = (QtGui.QFileDialog.getOpenFileName(ui,'Open Config File', GlobalVars.Ch1DirPath,'*.TAFcfg'))
-    GlobalVars.DirPath = QtCore.QFileInfo(loadfilename[0]).path();
+    loadfilename = (QtWidgets.QFileDialog.getOpenFileName(ui,'Open Config File', GlobalVars.Ch1DirPath,'*.TAFcfg'))
+    GlobalVars.DirPath = QtWidgets.QFileInfo(loadfilename[0]).path();
     GlobalVars.loadConfig(loadfilename[0])
     GlobalVars.UpDateValues(ui)
 
 def saveConfig_ButtonPressed():
     import GlobalVars    
-    savefilename = (QtGui.QFileDialog.getSaveFileName(ui,'Save Config File', GlobalVars.Ch1DirPath, '.TAFcfg','.TAFcfg'))
-    GlobalVars.DirPath = QtCore.QFileInfo(savefilename[0]).path();
+    savefilename = (QtWidgets.QFileDialog.getSaveFileName(ui,'Save Config File', GlobalVars.Ch1DirPath, '.TAFcfg','.TAFcfg'))
+    GlobalVars.DirPath = QtWidgets.QFileInfo(savefilename[0]).path();
     GlobalVars.saveConfig(savefilename[0])
 
 def updateSampleRate():
@@ -202,9 +202,9 @@ def updateSampleRate():
     
  
 
-class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
-        QtGui.QMainWindow.__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
         
@@ -256,7 +256,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
 if __name__ == "__main__":
     import GlobalVars
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     ui = MainWindow()
     RescanInputsButtonPushed()
     ui.show()
