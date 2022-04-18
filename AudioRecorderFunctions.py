@@ -204,7 +204,7 @@ def TriggeredRecordAudio(ui):
  RATE=GlobalVars.SampleRate;
  print(RATE)
  rel = int((RATE/CHUNK)) #*2) #2 channels Rate in audio chunks. 
- MIN_DUR=((GlobalVars.buffertime*2)+2);#
+ MIN_DUR=((GlobalVars.buffertime)+2);#
  
  GlobalVars.fps=((1000/GlobalVars.exposure))   
 
