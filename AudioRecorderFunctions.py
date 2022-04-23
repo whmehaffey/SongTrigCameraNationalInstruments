@@ -307,10 +307,12 @@ def TriggeredRecordAudio(ui):
       except:
           pass
       
+  data=b''.join(list(perm_win))
+  currmax=audioop.max(data,2);
   
-
-  
-  if((sum([x > GlobalVars.threshold for x in plotarray])> 0) and len(audio2send)<(MAX_DUR*rel)):    
+  #pdb.set_trace();
+  if (currmax > GlobalVars.threshold) and (len(audio2send)<MAX_DUR*rel):   > 0) and len(audio2send)<(MAX_DUR*rel)):
+      
    if(not started):
     OutputTask.write([True],auto_start=True)
     temp=time.time();    
