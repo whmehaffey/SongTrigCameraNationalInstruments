@@ -152,8 +152,6 @@ def VidAcquisition():
         while (GlobalVars.core.get_remaining_image_count()>0):             
                 new_image = GlobalVars.core.pop_next_image()                
                 new_image=new_image.reshape(GlobalVars.height,GlobalVars.width)
-                #new_image = new_image.astype('float32')/new_image.max()*255.0
-                #new_image = new_image.astype('uint8')
                 permwinimage.append(new_image)
                 newtime=time.time();
                 permwintimes.append(float(newtime)-float(starttime))
@@ -204,12 +202,12 @@ def TriggeredRecordAudio(ui):
  RATE=GlobalVars.SampleRate;
  print(RATE)
  rel = int((RATE/CHUNK)) #*2) #2 channels Rate in audio chunks. 
- MIN_DUR=((GlobalVars.buffertime)+2);#
+ MIN_DUR=((GlobalVars.buffertime*2)+2);#
  
  GlobalVars.fps=((1000/GlobalVars.exposure))   
 
- imagestartbuffer=deque(maxlen=int(GlobalVars.fps*PREV_AUDIO));
- permwinimage=deque(maxlen=int(GlobalVars.fps*PREV_AUDIO)); 
+ imagestartbuffer=deque(maxlen=ceil(int(GlobalVars.fps*PREV_AUDIO)));
+ permwinimage=deque(maxlen=ceil(int(GlobalVars.fps*PREV_AUDIO))); 
  startbuffertimes=deque(maxlen=int(GlobalVars.fps*PREV_AUDIO)); 
  permwintimes=deque(maxlen=int(GlobalVars.fps*PREV_AUDIO));
  
@@ -295,7 +293,7 @@ def TriggeredRecordAudio(ui):
       QtWidgets.qApp.processEvents()
       
   plot_win.append(cur_audio)  
-  perm_win.append(cur_audio)
+  perm_win.append(cur_data)
   plotdata = b''.join(list(plot_win))
   plotarray = array.array("h",plotdata);
   
@@ -307,12 +305,10 @@ def TriggeredRecordAudio(ui):
       except:
           pass
       
-  data=b''.join(list(perm_win))
-  currmax=audioop.max(data,2);
   
-  #pdb.set_trace();
-  if (currmax > GlobalVars.threshold) and (len(audio2send)<MAX_DUR*rel):   > 0) and len(audio2send)<(MAX_DUR*rel)):
-      
+
+  
+  if((sum([x > GlobalVars.threshold for x in plotarray])> 0) and len(audio2send)<(MAX_DUR*rel)):    
    if(not started):
     OutputTask.write([True],auto_start=True)
     temp=time.time();    
