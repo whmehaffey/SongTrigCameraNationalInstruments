@@ -152,6 +152,8 @@ def VidAcquisition():
         while (GlobalVars.core.get_remaining_image_count()>0):             
                 new_image = GlobalVars.core.pop_next_image()                
                 new_image=new_image.reshape(GlobalVars.height,GlobalVars.width)
+                #new_image = new_image.astype('float32')/new_image.max()*255.0
+                #new_image = new_image.astype('uint8')
                 permwinimage.append(new_image)
                 newtime=time.time();
                 permwintimes.append(float(newtime)-float(starttime))
@@ -195,21 +197,19 @@ def TriggeredRecordAudio(ui):
  
  vid_timer=(GlobalVars.exposure/1000)/2; #check regularly. 
  
- SILENCE_LIMIT = GlobalVars.buffertime;
  PREV_AUDIO = GlobalVars.buffertime;
  acq_timestamps=[]
  FrameTimesTracker=deque(maxlen=CHUNK);
- RATE=GlobalVars.SampleRate;
- print(RATE)
- rel = int((RATE/CHUNK)) #*2) #2 channels Rate in audio chunks. 
- MIN_DUR=((GlobalVars.buffertime*2)+2);#
+ RATE=GlobalVars.SampleRate; 
+ rel = int(ceil((RATE/CHUNK))) #*2) #2 channels Rate in audio chunks. 
+ MIN_DUR=((GlobalVars.buffertime)+1);# at least 1s of recording between the buffers....
  
  GlobalVars.fps=((1000/GlobalVars.exposure))   
 
- imagestartbuffer=deque(maxlen=ceil(int(GlobalVars.fps*PREV_AUDIO)));
- permwinimage=deque(maxlen=ceil(int(GlobalVars.fps*PREV_AUDIO))); 
- startbuffertimes=deque(maxlen=int(GlobalVars.fps*PREV_AUDIO)); 
- permwintimes=deque(maxlen=int(GlobalVars.fps*PREV_AUDIO));
+ imagestartbuffer=deque(maxlen=int(ceil(GlobalVars.fps*PREV_AUDIO)));
+ permwinimage=deque(maxlen=int(ceil(GlobalVars.fps*PREV_AUDIO))); 
+ startbuffertimes=deque(maxlen=int(ceil(GlobalVars.fps*PREV_AUDIO))); 
+ permwintimes=deque(maxlen=int(ceil(GlobalVars.fps*PREV_AUDIO)));
  
  
  imagesaving=[]
@@ -237,6 +237,8 @@ def TriggeredRecordAudio(ui):
  
  perm_win = deque(maxlen=int(PREV_AUDIO * rel)) 
  plot_win = deque(maxlen=int(0.5*rel))
+ thresh_win = deque(maxlen=int(PREV_AUDIO * rel))
+ 
  
 
  vidthread=threading.Timer(vid_timer,VidAcquisition)
@@ -258,7 +260,7 @@ def TriggeredRecordAudio(ui):
 
  timer = pg.QtCore.QTimer()
  timer.timeout.connect(updateGraph)
- timer.start(500)
+ timer.start(100)
  count=1;
 
 
@@ -280,22 +282,34 @@ def TriggeredRecordAudio(ui):
   currdata = np.empty((2*CHUNK,), dtype=temparray.dtype) # array for interleaved bytes
   curraudio = np.empty((CHUNK,), dtype=temparray.dtype) # array for byte audio.
   
-  curraudio = temparray[0,:];  
+  curraudio = temparray[0,:];
+  thresh_win.append(curraudio); # append here as an NP array
+  
+  
   currdata[0::2] = temparray[0,:];
   currdata[1::2] = temparray[1,:]
   
+  #thresh_win=thresh_win.append(curraudio); # get as int!
+  
   cur_data=currdata.tobytes(); # and to bytes finally. 
-  cur_audio=curraudio.tobytes();  
+  cur_audio=curraudio.tobytes();
+
+  
   
   count=count+1
-  if (count>20):
+  if (count>5):
       count=0
       QtWidgets.qApp.processEvents()
       
-  plot_win.append(cur_audio)  
+  plot_win.append(cur_audio)
+  #thresh_win.append(cur_audio);
+  thresharray=np.array(thresh_win)
   perm_win.append(cur_data)
+  
   plotdata = b''.join(list(plot_win))
   plotarray = array.array("h",plotdata);
+  #threshdata = b''.join(list(thresh_win));
+  #thresharray=array.array('h',threshdata);
   
   if (len(permwintimes)>2):
       try:
@@ -308,7 +322,7 @@ def TriggeredRecordAudio(ui):
   
 
   
-  if((sum([x > GlobalVars.threshold for x in plotarray])> 0) and len(audio2send)<(MAX_DUR*rel)):    
+  if(np.max(thresharray) > GlobalVars.threshold) and len(audio2send)<(MAX_DUR*rel):    
    if(not started):
     OutputTask.write([True],auto_start=True)
     temp=time.time();    
@@ -317,7 +331,11 @@ def TriggeredRecordAudio(ui):
     above_threshold=True;
    audio2send.append(cur_data)
    #above_threshold=True;
-  elif (started is True and len(audio2send)>(MIN_DUR*rel)):
+  elif (started is True and (len(audio2send)>(MIN_DUR)*rel)):
+   print(MIN_DUR)
+   print(len(audio2send))
+   print(rel)
+      
    print("Finished")
    OutputTask.write([False],auto_start=True)
    alltimes=list(startbuffertimes)+list(activewintimes);
@@ -333,7 +351,7 @@ def TriggeredRecordAudio(ui):
    activewintimes=[]
    starttime = time.time()
    ui.ListeningTextBox.setText('<span style="color:green">quiet</span>')
-   audio2send=[]
+   audio2send=[]     
   elif (started is True):
    print('too short');
    print('total time:')

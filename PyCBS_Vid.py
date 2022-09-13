@@ -6,7 +6,6 @@ from PyQt5 import QtCore, QtGui, uic, QtWidgets
 qtCreatorFile = "GUI2.ui" # Enter file here.
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
-##from PyRecordMenu import Ui_MainWindow
 from AudioRecorderFunctions import *
 import GlobalVars
 
@@ -28,8 +27,6 @@ def RescanInputsButtonPushed():
     ui.InputSelectioncomboBox.clear();
     
     for p in NIDevices:                              
-              # temp = p[0]
-               #print(temp)
                ui.InputSelectioncomboBox.insertItem(0,str(p))
                
     ui.InputSelectioncomboBox.setCurrentText(GlobalVars.DeviceName);    
@@ -41,20 +38,12 @@ def RescanInputsButtonPushed():
     device = Device(GlobalVars.DeviceName)
     DAQPorts=device.do_lines.channel_names;    
     
-    for p in DAQPorts:                              
-              # temp = p[0]
-               #print(temp)
+    for p in DAQPorts:   
                ui.DAQOutComboBox.insertItem(0,str(p))
 
     ui.DAQOutComboBox.setCurrentText(GlobalVars.Pin1);
     ui.DAQOutComboBox.currentIndexChanged.connect(Ch1TriggerChanged);
-##
-##
-##    if (len(temp)>0):
-##        GlobalVars.COM_PORT=(temp)
-##    else:
-##        print("No Teensy Serial Device")   
-  
+
 def StopPushButton():   
     import GlobalVars
     GlobalVars.isRunning=0
@@ -65,8 +54,7 @@ def StopPushButton():
     ui.ThresholdLineEdit.setEnabled(True)
     ui.InputSelectioncomboBox.setEnabled(True)    
     ui.BufferTimeSpinBox.setEnabled(True)
-    ui.Ch1SaveDirPushButton.setEnabled(True)
-    ui.ArduinoSelectioncomboBox.setEnabled(True)
+    ui.Ch1SaveDirPushButton.setEnabled(True)    
     ui.SampleRatecomboBox.setEnabled(True)
     ui.InputSelectioncomboBox.setEnabled(True)
     ui.SelectROIPushButton.setEnabled(True)
@@ -87,7 +75,6 @@ def StartPushButton():
     ui.InputSelectioncomboBox.setEnabled(False)    
     ui.BufferTimeSpinBox.setEnabled(False)
     ui.Ch1SaveDirPushButton.setEnabled(False)
-    ui.ArduinoSelectioncomboBox.setEnabled(False)
     ui.SampleRatecomboBox.setEnabled(False)
     ui.InputSelectioncomboBox.setEnabled(False)
     ui.SelectROIPushButton.setEnabled(False)
@@ -115,13 +102,11 @@ def SelectROIPushButtonPressed(ui):
     GlobalVars.core.clear_roi();    
     GlobalVars.core.snap_image();
     image_array=(GlobalVars.core.get_image())    
-  #  image_array = image_array.astype('float32')/image_array.max()*255.0
-   # image_array = image_array.astype('uint8')
     image_array = image_array.reshape(GlobalVars.height,GlobalVars.width);
     roi=cv2.selectROI('Choose ROI - Enter to select, "c" to cancel',image_array)
 
     print(roi);
-  #pdb.set_trace();
+  
     GlobalVars.core.set_roi(roi[0], roi[1], roi[2]-roi[0], roi[3]-roi[1]);    
     #ui.ClearROIPushButton.setEnabled(True);
     GlobalVars.height=GlobalVars.core.get_image_height();
@@ -148,9 +133,9 @@ def Ch1SaveDirPushButtonpushButtonClicked():
     import GlobalVars
     import pdb
     
-    savefilename = (QtWidgets.QFileDialog.getSaveFileName(ui,'Save Name/Directory', GlobalVars.Ch1DirPath, ''))
-    GlobalVars.Ch1DirPath = QtWidgets.QFileInfo(savefilename[0]).path();
-    GlobalVars.Ch1fileName = QtWidgets.QFileInfo(savefilename[0]).fileName();
+    savefilename = (QtGui.QFileDialog.getSaveFileName(ui,'Save Name/Directory', GlobalVars.Ch1DirPath, ''))
+    GlobalVars.Ch1DirPath = QtCore.QFileInfo(savefilename[0]).path();
+    GlobalVars.Ch1fileName = QtCore.QFileInfo(savefilename[0]).fileName();
     
     ui.Ch1FileNameLabel.setText("Filename: "+GlobalVars.Ch1fileName)
     ui.Ch1FileDirectoryLabel.setText("Directory: "+GlobalVars.Ch1DirPath)
@@ -185,15 +170,15 @@ def loadConfig_ButtonPressed():
     import os
     import GlobalVars       
             
-    loadfilename = (QtWidgets.QFileDialog.getOpenFileName(ui,'Open Config File', GlobalVars.Ch1DirPath,'*.TAFcfg'))
-    GlobalVars.DirPath = QtWidgets.QFileInfo(loadfilename[0]).path();
+    loadfilename = (QtGui.QFileDialog.getOpenFileName(ui,'Open Config File', GlobalVars.Ch1DirPath,'*.TAFcfg'))
+    GlobalVars.DirPath = QtCore.QFileInfo(loadfilename[0]).path();
     GlobalVars.loadConfig(loadfilename[0])
     GlobalVars.UpDateValues(ui)
 
 def saveConfig_ButtonPressed():
     import GlobalVars    
-    savefilename = (QtWidgets.QFileDialog.getSaveFileName(ui,'Save Config File', GlobalVars.Ch1DirPath, '.TAFcfg','.TAFcfg'))
-    GlobalVars.DirPath = QtWidgets.QFileInfo(savefilename[0]).path();
+    savefilename = (QtGui.QFileDialog.getSaveFileName(ui,'Save Config File', GlobalVars.Ch1DirPath, '.TAFcfg','.TAFcfg'))
+    GlobalVars.DirPath = QtCore.QFileInfo(savefilename[0]).path();
     GlobalVars.saveConfig(savefilename[0])
 
 def updateSampleRate():
@@ -202,9 +187,9 @@ def updateSampleRate():
     
  
 
-class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self):
-        QtWidgets.QMainWindow.__init__(self)
+        QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
         
@@ -256,13 +241,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 if __name__ == "__main__":
     import GlobalVars
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtGui.QApplication(sys.argv)
     ui = MainWindow()
     RescanInputsButtonPushed()
     ui.show()
     sys.exit(app.exec_())
-    
-    #window.show()
-    #sys.exit(app.exec_())
+
 
 
