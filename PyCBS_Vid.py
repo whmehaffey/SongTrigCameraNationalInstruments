@@ -2,7 +2,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication,QDialog,QSizeGrip
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
-from pycromanager import Core;
+#from pycromanager import Core;
 
 qtCreatorFile = "GUI2.ui" # Enter file here.
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
@@ -202,7 +202,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         bridge = pycromanager.Bridge()
         
         #get object representing micro-manager core
-        GlobalVars.core= pycromanager.Core()
+        GlobalVars.core= bridge.get_core()
+        #GlobalVars.core= pycromanager.Core()
         GlobalVars.core.clear_roi();
         GlobalVars.height=GlobalVars.core.get_image_height();
         GlobalVars.width=GlobalVars.core.get_image_width();

@@ -282,16 +282,16 @@ def TriggeredRecordAudio(ui):
   temparray=temparray*(32768/10);# so scale +/- 10 to +/- 32678
   temparray=temparray.astype('int16');# and shift to int16 for WAV writing later
 
-  currdata = np.empty((2*CHUNK,), dtype=temparray.dtype) # array for interleaved bytes
+  currdata = np.empty((3*CHUNK,), dtype=temparray.dtype) # array for interleaved bytes
   curraudio = np.empty((CHUNK,), dtype=temparray.dtype) # array for byte audio.
   
   curraudio = temparray[0,:];
   thresh_win.append(curraudio); # append here as an NP array
   
   
-  currdata[0::2] = temparray[0,:];
-  currdata[1::2] = temparray[1,:]
-  currdata[1::2] = temparray[2,:]
+  currdata[0::3] = temparray[0,:];
+  currdata[1::3] = temparray[1,:]
+  currdata[2::3] = temparray[2,:]
   
   #thresh_win=thresh_win.append(curraudio); # get as int!
   
