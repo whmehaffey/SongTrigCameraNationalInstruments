@@ -157,10 +157,11 @@ def VidAcquisition():
                 permwinimage.append(new_image)
                 newtime=time.time();
                 permwintimes.append(float(newtime)-float(starttime))
-              
+                    
                 if (above_threshold==True):           #EG are we recording      
                     imagesaving.append(new_image)                            
                     activewintimes.append(float(newtime)-float(starttime))
+
                 else:              
                     imagestartbuffer.append(new_image);                         
                     startbuffertimes.append(float(newtime)-float(starttime));
@@ -207,7 +208,8 @@ def TriggeredRecordAudio(ui):
  GlobalVars.fps=((1000/GlobalVars.exposure))   
 
  imagestartbuffer=deque(maxlen=int(ceil(GlobalVars.fps*PREV_AUDIO)));
- permwinimage=deque(maxlen=int(ceil(GlobalVars.fps*PREV_AUDIO))); 
+ permwinimage=deque(maxlen=int(ceil(GlobalVars.fps*PREV_AUDIO)));
+ 
  startbuffertimes=deque(maxlen=int(ceil(GlobalVars.fps*PREV_AUDIO))); 
  permwintimes=deque(maxlen=int(ceil(GlobalVars.fps*PREV_AUDIO)));
  
@@ -225,6 +227,7 @@ def TriggeredRecordAudio(ui):
  InputTask=nidaqmx.Task()
  InputTask.ai_channels.add_ai_voltage_chan("Dev1/ai2",terminal_config = TerminalConfiguration.RSE)
  InputTask.ai_channels.add_ai_voltage_chan("Dev1/ai3",terminal_config = TerminalConfiguration.RSE)
+ InputTask.ai_channels.add_ai_voltage_chan("Dev1/ai4",terminal_config = TerminalConfiguration.RSE)
  InputTask.timing.cfg_samp_clk_timing(RATE,sample_mode=AcquisitionType.CONTINUOUS,samps_per_chan=GlobalVars.SampleRate*20)
  InputTask.start()
  
@@ -288,6 +291,7 @@ def TriggeredRecordAudio(ui):
   
   currdata[0::2] = temparray[0,:];
   currdata[1::2] = temparray[1,:]
+  currdata[1::2] = temparray[2,:]
   
   #thresh_win=thresh_win.append(curraudio); # get as int!
   
@@ -318,31 +322,27 @@ def TriggeredRecordAudio(ui):
           ui.FPS_Label.setText(str(FPSDisplay))
       except:
           pass
-      
-  
+        
 
   
   if(np.max(thresharray) > GlobalVars.threshold) and len(audio2send)<(MAX_DUR*rel):    
    if(not started):
     OutputTask.write([True],auto_start=True)
-    temp=time.time();    
+    AudioTrigTime=time.time();    #time recording is started (not including buffer time);
     ui.ListeningTextBox.setText('<span style="color:red">singing</span>')
     started = True
     above_threshold=True;
    audio2send.append(cur_data)
    #above_threshold=True;
-  elif (started is True and (len(audio2send)>(MIN_DUR)*rel)):
-   print(MIN_DUR)
-   print(len(audio2send))
-   print(rel)
-      
+  elif (started is True and (len(audio2send)>(MIN_DUR)*rel)):    
    print("Finished")
    OutputTask.write([False],auto_start=True)
    alltimes=list(startbuffertimes)+list(activewintimes);
-   above_threshold=False;
    print('total time:')
-   print(time.time()-temp+PREV_AUDIO)
-   filename = save_audio(list(prev_audio) + audio2send,imagestartbuffer,imagesaving,fps,alltimes,GlobalVars.Ch1DirPath,GlobalVars.Ch1fileName)
+   print(time.time()-AudioTrigTime+PREV_AUDIO)
+   imagedatalen=len(imagesaving);
+   filename = save_audio(list(prev_audio) + audio2send,imagestartbuffer,imagesaving,imagedatalen,fps,alltimes,GlobalVars.Ch1DirPath,GlobalVars.Ch1fileName)
+   above_threshold=False; #after we save, otherwise it can overwrite the start buffer if saving is slowed.
    started = False     
    prev_audio = copy.copy(perm_win)
    imagestartbuffer=copy.copy(permwinimage)  
@@ -355,7 +355,7 @@ def TriggeredRecordAudio(ui):
   elif (started is True):
    print('too short');
    print('total time:')
-   print(time.time()-temp+PREV_AUDIO)
+   print(time.time()-AudioTrigTime+PREV_AUDIO)
    #ui.ListeningTextBox.setText('too short')
    OutputTask.write([False],auto_start=True)
    started = False
@@ -381,7 +381,7 @@ def TriggeredRecordAudio(ui):
  OutputTask.close();
  GlobalVars.core.stop_sequence_acquisition();
  
-def save_audio(data, imagebuffer,imagedata,fps, timestamps,rootdir, filename):
+def save_audio(data, imagebuffer,imagedata,imagedatalen,fps, timestamps,rootdir, filename):
  import GlobalVars
  import pdb;
  import pyaudio
@@ -407,7 +407,7 @@ def save_audio(data, imagebuffer,imagedata,fps, timestamps,rootdir, filename):
  data = b''.join(data)
 
  wf = wave.open(filename + '.wav', 'wb')
- wf.setnchannels(2);
+ wf.setnchannels(3);
  wf.setsampwidth(pyaudio.get_sample_size(FORMAT))
  wf.setframerate(int(GlobalVars.SampleRate)) 
  wf.writeframes(data)
@@ -429,7 +429,7 @@ def save_audio(data, imagebuffer,imagedata,fps, timestamps,rootdir, filename):
      im = im.resize((int(GlobalVars.width),int(GlobalVars.height)), Image.ANTIALIAS) 
      tif.write_image(im, compression = None)
      
- for i in range (len(imagedata)):
+ for i in range(imagedatalen):  #don't save frames that may accumulate post-stopping the audio.
      im = Image.fromarray(imagedata[i])
      im = im.resize((int(GlobalVars.width),int(GlobalVars.height)), Image.ANTIALIAS)
      try:

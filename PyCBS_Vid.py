@@ -2,6 +2,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication,QDialog,QSizeGrip
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
+from pycromanager import Core;
 
 qtCreatorFile = "GUI2.ui" # Enter file here.
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
@@ -133,7 +134,7 @@ def Ch1SaveDirPushButtonpushButtonClicked():
     import GlobalVars
     import pdb
     
-    savefilename = (QtGui.QFileDialog.getSaveFileName(ui,'Save Name/Directory', GlobalVars.Ch1DirPath, ''))
+    savefilename = (QtWidgets.QFileDialog.getSaveFileName(ui,'Save Name/Directory', GlobalVars.Ch1DirPath, ''))
     GlobalVars.Ch1DirPath = QtCore.QFileInfo(savefilename[0]).path();
     GlobalVars.Ch1fileName = QtCore.QFileInfo(savefilename[0]).fileName();
     
@@ -187,9 +188,9 @@ def updateSampleRate():
     
  
 
-class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
-        QtGui.QMainWindow.__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
         
@@ -201,7 +202,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         bridge = pycromanager.Bridge()
         
         #get object representing micro-manager core
-        GlobalVars.core= bridge.get_core()
+        GlobalVars.core= pycromanager.Core()
         GlobalVars.core.clear_roi();
         GlobalVars.height=GlobalVars.core.get_image_height();
         GlobalVars.width=GlobalVars.core.get_image_width();
@@ -241,7 +242,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
 if __name__ == "__main__":
     import GlobalVars
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     ui = MainWindow()
     RescanInputsButtonPushed()
     ui.show()
