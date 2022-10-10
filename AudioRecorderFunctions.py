@@ -146,10 +146,15 @@ def VidAcquisition():
         global vid_timer;
         global above_threshold;
 
-
-            
-        #if GlobalVars.core.is_sequence_running():
-        while (GlobalVars.core.get_remaining_image_count()>0):             
+        gotframe=False;
+        
+        above_threshold_local=above_threshold; #move to a non-global variable, this frame was acquired with this variable set
+        # all frames before this should be in buffer!
+        
+        #if GlobalVars.core.is_sequence_running():        
+        while (GlobalVars.core.get_remaining_image_count()>0):
+                gotframe=True;                
+                
                 new_image = GlobalVars.core.pop_next_image()                
                 new_image=new_image.reshape(GlobalVars.height,GlobalVars.width)
                 #new_image = new_image.astype('float32')/new_image.max()*255.0
@@ -158,17 +163,22 @@ def VidAcquisition():
                 newtime=time.time();
                 permwintimes.append(float(newtime)-float(starttime))
                     
-                if (above_threshold==True):           #EG are we recording      
+                if (above_threshold_local==True):           #EG are we recording      
                     imagesaving.append(new_image)                            
                     activewintimes.append(float(newtime)-float(starttime))
 
                 else:              
                     imagestartbuffer.append(new_image);                         
                     startbuffertimes.append(float(newtime)-float(starttime));
-                            
-        if (GlobalVars.isRunning):
-            vidthread=threading.Timer(vid_timer,VidAcquisition)
-            vidthread.start();
+                    
+        if (gotframe=False):
+            if (GlobalVars.isRunning):
+                vidthread=threading.Timer(vid_timer,0.001) #Check for new frame in 1ms
+                vidthread.start();
+        elif:
+            if (GlobalVars.isRunning):
+                vidthread=threading.Timer(vid_timer,VidAcquisition) #Check for new frame in 1/2 FPS
+                vidthread.start();            
             
 def TriggeredRecordAudio(ui):
     
@@ -328,10 +338,10 @@ def TriggeredRecordAudio(ui):
   if(np.max(thresharray) > GlobalVars.threshold) and len(audio2send)<(MAX_DUR*rel):    
    if(not started):
     OutputTask.write([True],auto_start=True)
+    above_threshold=True;
     AudioTrigTime=time.time();    #time recording is started (not including buffer time);
     ui.ListeningTextBox.setText('<span style="color:red">singing</span>')
     started = True
-    above_threshold=True;
    audio2send.append(cur_data)
    #above_threshold=True;
   elif (started is True and (len(audio2send)>(MIN_DUR)*rel)):    
